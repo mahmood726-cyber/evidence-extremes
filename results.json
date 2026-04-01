@@ -1,0 +1,169 @@
+{
+  "n_total": 6229,
+  "n_below_50": 271,
+  "mean_score": 65.49397977203404,
+  "gev": {
+    "shape": 4.322218050019001,
+    "loc": 20.27047464330852,
+    "scale": 5.491268435399543,
+    "success": true,
+    "n": 14
+  },
+  "return_levels": {
+    "50": -26813591.422967717,
+    "100": -548248136.9068521,
+    "500": -585631177281.0558
+  },
+  "gpd": {
+    "shape": 0.03924507109711472,
+    "scale": 2.9834701542500497,
+    "success": true,
+    "n": 271
+  },
+  "tail_by_domain": [
+    {
+      "domain": "Other",
+      "xi": 0.06097799904857941,
+      "scale": 4.580705487112099,
+      "n": 58,
+      "ci_lo": -0.3029848637784422,
+      "ci_hi": 0.42494086187560104,
+      "success": true
+    },
+    {
+      "domain": "Hypertension",
+      "xi": 0.03431104593082873,
+      "scale": 3.0578699432872014,
+      "n": 12,
+      "ci_lo": -0.7658556033783428,
+      "ci_hi": 0.8344776952400002,
+      "success": true
+    },
+    {
+      "domain": "Diabetes",
+      "xi": -0.039827234305494806,
+      "scale": 3.1905621051941355,
+      "n": 58,
+      "ci_lo": -0.4037900971325164,
+      "ci_hi": 0.32413562852152683,
+      "success": true
+    },
+    {
+      "domain": "Respiratory",
+      "xi": -0.09663564204144404,
+      "scale": 2.0904338148526374,
+      "n": 11,
+      "ci_lo": -0.932382450155437,
+      "ci_hi": 0.7391111660725489,
+      "success": true
+    },
+    {
+      "domain": "Mental_health",
+      "xi": -0.23890979731452933,
+      "scale": 3.793184191070443,
+      "n": 32,
+      "ci_lo": -0.7289097973145293,
+      "ci_hi": 0.25109020268547066,
+      "success": true
+    },
+    {
+      "domain": "Pregnancy",
+      "xi": -0.31949389393494987,
+      "scale": 3.613494771266751,
+      "n": 24,
+      "ci_lo": -0.8852971577407831,
+      "ci_hi": 0.24630936987088337,
+      "success": true
+    },
+    {
+      "domain": "Cardiovascular",
+      "xi": -0.3978976038552763,
+      "scale": 2.8905401042496472,
+      "n": 36,
+      "ci_lo": -0.8598740342304874,
+      "ci_hi": 0.06407882651993474,
+      "success": true
+    },
+    {
+      "domain": "Pain",
+      "xi": -0.4535188571259958,
+      "scale": 3.6534362724126934,
+      "n": 22,
+      "ci_lo": -1.0444810924984125,
+      "ci_hi": 0.13744337824642083,
+      "success": true
+    },
+    {
+      "domain": "Infection",
+      "xi": -0.49210356505383274,
+      "scale": 2.3806649630333405,
+      "n": 7,
+      "ci_lo": -1.5397676333505363,
+      "ci_hi": 0.5555605032428708,
+      "success": true
+    },
+    {
+      "domain": "Cancer",
+      "xi": -1.0994121282454667,
+      "scale": 3.2982363847364007,
+      "n": 6,
+      "ci_lo": -2.231018655857133,
+      "ci_hi": 0.03219439936619972,
+      "success": true
+    },
+    {
+      "domain": "Gastrointestinal",
+      "xi": -1.8709097761941393,
+      "scale": 5.612729328582419,
+      "n": 5,
+      "ci_lo": -3.110522618980144,
+      "ci_hi": -0.6312969334081346,
+      "success": true
+    },
+    {
+      "domain": "Dermatology",
+      "xi": NaN,
+      "scale": NaN,
+      "n": 0,
+      "ci_lo": NaN,
+      "ci_hi": NaN,
+      "success": false
+    },
+    {
+      "domain": "Neurological",
+      "xi": NaN,
+      "scale": NaN,
+      "n": 0,
+      "ci_lo": NaN,
+      "ci_hi": NaN,
+      "success": false
+    },
+    {
+      "domain": "Renal",
+      "xi": NaN,
+      "scale": NaN,
+      "n": 0,
+      "ci_lo": NaN,
+      "ci_hi": NaN,
+      "success": false
+    }
+  ],
+  "block_minima": {
+    "Cancer": "47",
+    "Cardiovascular": "44",
+    "Dermatology": "78",
+    "Diabetes": "34",
+    "Gastrointestinal": "47",
+    "Hypertension": "37",
+    "Infection": "46",
+    "Mental_health": "39",
+    "Neurological": "56",
+    "Other": "19",
+    "Pain": "43",
+    "Pregnancy": "42",
+    "Renal": "53",
+    "Respiratory": "43"
+  },
+  "heaviest_domain": "Other",
+  "heaviest_xi": 0.06097799904857941
+}
