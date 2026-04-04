@@ -63,10 +63,13 @@ def fit_gev(block_minima: np.ndarray) -> dict:
     scipy.stats.genextreme fits MAXIMA by convention, so we negate the data
     (i.e. fit -block_minima), then recover the location for the original scale.
 
-    Returns dict with keys: shape (xi), loc (mu_min), scale (sigma), success.
-    shape > 0 => Frechet (heavy lower tail)
-    shape < 0 => Weibull (bounded)
-    shape ~ 0 => Gumbel
+    Returns dict with keys: shape (scipy c = -xi_standard), loc (mu_min), scale (sigma), success.
+
+    IMPORTANT: scipy.stats.genextreme uses shape parameter c = -xi_standard.
+    For the MINIMA distribution (after negation):
+      c < 0 (shape < 0) => Frechet (heavy lower tail, unbounded below)
+      c > 0 (shape > 0) => Weibull (bounded lower tail)
+      c ~ 0 (shape ~ 0) => Gumbel (light exponential tail)
     """
     arr = np.asarray(block_minima, dtype=float)
     arr = arr[np.isfinite(arr)]
@@ -136,24 +139,23 @@ def return_level_gev(
 ) -> float:
     """Compute GEV return level for MINIMA for return period m.
 
+    Parameters use the scipy genextreme convention where shape = c = -xi_standard.
+    loc = mu_min (location on original minima scale, already negated back).
+    scale = sigma (always positive).
+
     Derivation: we fit GEV on -block_minima (maxima convention).
-    The m-period return level for minima is x_m = -w_m where w_m is the
-    m-period maximum return level of the negated data.
+    scipy returns (c, loc_neg, sigma) where c = -xi_standard.
+    The m-period maxima return level (using standard xi = -c) is:
+        w_m = loc_neg + sigma/(-c) * (y^c - 1),  y = -log(1-1/m)
+    For MINIMA: x_m = -w_m = mu_min + sigma/c * (y^c - 1)
 
-    For MAXIMA: w_m = loc_neg + sigma/xi*(y^(-xi) - 1), y = -log(1-1/m)
-    For MINIMA: x_m = -w_m = -loc_neg - sigma/xi*(y^(-xi) - 1)
-                           = mu + sigma/xi*(1 - y^(-xi))   [since mu = -loc_neg]
+    As m -> inf, y -> 0.
+      c < 0 (Frechet minima): y^c -> inf, so (y^c - 1)/c -> -inf => x_m -> -inf. CORRECT.
+      c > 0 (Weibull minima): y^c -> 0, so (y^c - 1)/c -> -1/c, bounded. CORRECT.
 
-    Wait — that still increases with m. Let me be precise:
-    x_m = -loc_neg - sigma/xi*(y^(-xi) - 1) = mu - sigma/xi*(y^(-xi) - 1)
-        = mu + sigma/xi*(1 - y^(-xi))
-    As m -> inf, y -> 0, y^(-xi) -> inf for xi>0, so 1-y^(-xi) -> -inf => x_m -> -inf. CORRECT.
-
-    Gumbel special case (|xi| < tol):
-    w_m = loc_neg + sigma*log(y), so x_m = -loc_neg - sigma*log(y) = mu - sigma*log(y)
-    Wait: mu = -loc_neg, so x_m = mu - sigma*log(y).
-    Actually: Gumbel ppf(1-1/m) = loc_neg - sigma*log(-log(1-1/m)) = loc_neg - sigma*log(y)
-    x_m = -(loc_neg - sigma*log(y)) = -loc_neg + sigma*log(y) = mu + sigma*log(y)
+    Gumbel special case (|c| < tol):
+        w_m = loc_neg - sigma*log(y)
+        x_m = mu_min + sigma*log(y)
     As m->inf, y->0, log(y)->-inf => x_m -> -inf. CORRECT.
 
     Returns the return level (a trust score; lower is more extreme for minima).
@@ -168,9 +170,9 @@ def return_level_gev(
         # Gumbel minima: x_m = mu + sigma*log(y)  [log(y) < 0 for m > ~2.7]
         x_m = loc + scale * np.log(y)
     else:
-        # Frechet/Weibull minima: x_m = mu + sigma/xi*(1 - y^(-xi))
-        # For xi>0: y^(-xi)->inf as y->0 => x_m -> -inf as m->inf. CORRECT.
-        x_m = loc + (scale / shape) * (1.0 - y ** (-shape))
+        # Non-Gumbel minima: x_m = mu + sigma/c * (y^c - 1)
+        # shape = c (scipy convention); correct formula uses y^c, NOT y^(-c)
+        x_m = loc + (scale / shape) * (y ** shape - 1.0)
 
     return float(x_m)
 

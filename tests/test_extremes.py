@@ -184,6 +184,28 @@ class TestReturnLevelGEV:
             f"1-in-500 min ({rl_dict[500]:.2f}) should be < 1-in-100 min ({rl_dict[100]:.2f})"
         )
 
+    def test_t12b_return_level_matches_scipy_ppf(self):
+        """T12b: Return level must match scipy genextreme.ppf ground truth.
+
+        This regression test ensures the scipy sign convention (c = -xi_standard)
+        is handled correctly in the return level formula.
+        """
+        from scipy.stats import genextreme
+        # Fit on realistic block minima
+        block_minima = np.array([19, 24, 27, 30, 32, 35, 38, 39, 40, 41, 42, 44, 46, 48], dtype=float)
+        neg = -block_minima
+        c, loc_neg, sc = genextreme.fit(neg)
+        mu_min = -loc_neg
+        for m in [10, 50, 100, 500]:
+            # Ground truth from scipy ppf
+            w_m = genextreme.ppf(1 - 1.0 / m, c, loc=loc_neg, scale=sc)
+            x_m_true = -w_m
+            # Our function
+            x_m_ours = return_level_gev(c, mu_min, sc, m)
+            assert abs(x_m_ours - x_m_true) < 1e-6, (
+                f"m={m}: ours={x_m_ours:.6f} vs scipy={x_m_true:.6f}, diff={abs(x_m_ours-x_m_true):.2e}"
+            )
+
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # T13-T16: tail_index_by_domain
