@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EvidenceExtremes Dashboard</title>
+  <style>
+    :root {
+      --bg: #f6f3ee;
+      --paper: rgba(255,255,255,0.93);
+      --ink: #111;
+      --muted: #5f5a53;
+      --line: #ddd5ca;
+      --line-strong: #b8aea2;
+      --accent: #326891;
+      --accent-soft: #e8f0f6;
+      --bad: #922b21;
+      --warn: #a06a12;
+      --good: #216c53;
+      --shadow: 0 16px 38px rgba(17,17,17,0.045);
+      --serif: "Iowan Old Style","Palatino Linotype","Book Antiqua",Palatino,Georgia,serif;
+      --sans: "Segoe UI","Helvetica Neue",Arial,sans-serif;
+      --mono: "SFMono-Regular",Consolas,"Liberation Mono",monospace;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:radial-gradient(circle at top,rgba(50,104,145,.08),transparent 28%),linear-gradient(180deg,#fcfbf8 0%,var(--bg) 100%);font-family:var(--serif);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+    .page{width:min(1240px,calc(100vw - 40px));margin:20px auto 80px;display:grid;gap:22px}
+    .masthead{padding:10px 0 16px;border-top:1px solid var(--line-strong);border-bottom:3px double var(--line);display:flex;justify-content:space-between;align-items:end;gap:16px}
+    .brand{font-size:clamp(28px,4vw,44px);font-weight:700;letter-spacing:-.035em}
+    .brand span{color:var(--accent)}
+    .meta{font-family:var(--sans);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.15em;text-align:right}
+    .hero{background:var(--paper);border:1px solid var(--line);border-top:4px solid var(--ink);box-shadow:var(--shadow);padding:36px clamp(20px,4vw,48px) 30px;position:relative;overflow:hidden}
+    .hero::after{content:"";position:absolute;inset:auto -10% -40% auto;width:44%;aspect-ratio:1;background:radial-gradient(circle,rgba(50,104,145,.12),transparent 68%);pointer-events:none}
+    .eyebrow{color:var(--accent);font-family:var(--sans);font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;margin-bottom:12px}
+    h1{font-size:clamp(36px,5vw,64px);line-height:.97;letter-spacing:-.04em;font-weight:700;margin-bottom:14px;max-width:16ch;text-wrap:balance}
+    .lede{color:#464038;font-size:clamp(17px,2vw,22px);line-height:1.6;max-width:52ch;text-wrap:pretty}
+    .rail{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(3,1fr);gap:12px;font-family:var(--sans);font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted)}
+    .rail>div{padding:12px 14px;border-top:1px solid var(--line-strong);background:rgba(255,255,255,.62)}
+    .rail .big{font-family:var(--sans);font-size:28px;font-weight:800;letter-spacing:-.02em;color:var(--ink);display:block;margin-bottom:4px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+    .card{background:var(--paper);border:1px solid var(--line);border-top:3px solid var(--ink);box-shadow:var(--shadow);padding:24px clamp(16px,2.4vw,28px);border-radius:6px}
+    .card.accent{border-top-color:var(--accent)}
+    .section-title{font-family:var(--sans);font-size:11px;text-transform:uppercase;letter-spacing:.16em;color:var(--muted);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+    canvas{width:100%;display:block}
+    .plot-wrap{background:rgba(255,255,255,.88);border:1px solid var(--line);padding:16px}
+    .plot-caption{margin-top:10px;font-family:var(--sans);font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);line-height:1.8}
+    .forest-bar-wrap{display:grid;gap:6px;margin-top:8px}
+    .forest-row{display:grid;grid-template-columns:120px 1fr 60px;gap:8px;align-items:center;font-family:var(--sans);font-size:12px}
+    .forest-label{color:var(--ink);font-size:11px;text-overflow:ellipsis;white-space:nowrap;overflow:hidden}
+    .forest-track{height:20px;background:#f0ece5;position:relative;border-radius:2px}
+    .forest-bar{height:100%;background:var(--accent);border-radius:2px;position:absolute;left:0;top:0;transition:width .4s ease}
+    .forest-bar.heavy{background:var(--bad)}
+    .forest-xi{font-family:var(--mono);font-size:11px;color:var(--muted);text-align:right}
+    .chip-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+    .chip{display:inline-flex;align-items:center;padding:5px 10px;border-radius:999px;font-family:var(--sans);font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+    .chip.frechet{background:rgba(146,43,33,.1);color:var(--bad);border:1px solid rgba(146,43,33,.2)}
+    .chip.gumbel{background:rgba(160,106,18,.1);color:var(--warn);border:1px solid rgba(160,106,18,.2)}
+    .chip.weibull{background:rgba(33,108,83,.1);color:var(--good);border:1px solid rgba(33,108,83,.2)}
+    .stat-grid{display:grid;gap:10px}
+    .stat{padding:14px;border:1px solid var(--line);border-left:4px solid var(--accent);background:var(--paper)}
+    .stat-label{font-family:var(--sans);font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);margin-bottom:6px}
+    .stat-value{font-family:var(--sans);font-size:24px;font-weight:800;line-height:1}
+    @media(max-width:900px){.grid2{grid-template-columns:1fr}.rail{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<main class="page">
+  <header class="masthead">
+    <div class="brand">Evidence<span>Extremes</span></div>
+    <div class="meta">Extreme Value Theory &bull; Cochrane Trust Scores<br>6,229 Meta-Analyses &bull; 2026-04-01</div>
+  </header>
+
+  <!-- S1: HERO -->
+  <section class="hero">
+    <div class="eyebrow">Extreme Value Analysis</div>
+    <h1>The Worst Meta-Analyses</h1>
+    <p class="lede">GEV block-minima and GPD peaks-over-threshold modelling of the lower tail of Cochrane meta-analysis trust scores identifies a near-Gumbel tail structure and characterises domain-level risk.</p>
+    <div class="rail">
+      <div>
+        <span class="big" id="hero-gev-xi">4.322</span>
+        Overall GEV &xi; (shape)
+      </div>
+      <div>
+        <span class="big" id="hero-gpd-xi">0.039</span>
+        GPD &xi; (F-grade exceedances)
+      </div>
+      <div>
+        <span class="big" id="hero-n-below">271</span>
+        MAs below threshold (score &lt; 50)
+      </div>
+    </div>
+  </section>
+
+  <div class="grid2">
+    <!-- S2: RETURN LEVEL PLOT -->
+    <section class="card">
+      <h2 class="section-title">S2: Return Level Plot (Empirical Percentile)</h2>
+      <div class="plot-wrap">
+        <canvas id="rlCanvas" height="260"></canvas>
+      </div>
+      <div class="plot-caption" id="rlCaption">
+        Trust score at the 1/m empirical quantile for return periods m = 10, 50, 100, 200, 500.
+        Lower values indicate more extreme low-quality meta-analyses.
+      </div>
+    </section>
+
+    <!-- S3: TAIL INDEX FOREST -->
+    <section class="card accent">
+      <h2 class="section-title">S3: GPD Tail Index (&xi;) by Domain</h2>
+      <div class="forest-bar-wrap" id="forestBars"></div>
+      <div class="chip-row">
+        <span class="chip frechet">&xi; &gt; 0: Frechet (heavy tail)</span>
+        <span class="chip gumbel">&xi; &asymp; 0: Gumbel</span>
+        <span class="chip weibull">&xi; &lt; 0: Weibull (bounded)</span>
+      </div>
+      <div class="plot-caption" style="margin-top:10px">
+        GPD fitted to exceedances below threshold 50 per domain. Higher &xi; = heavier lower tail = more extreme outliers.
+        Heaviest domain: <strong id="heaviest-label">Other</strong> (&xi; = 0.061).
+      </div>
+    </section>
+  </div>
+
+  <!-- S4: QQ PLOT -->
+  <section class="card">
+    <h2 class="section-title">S4: QQ Plot — Empirical vs GEV Theoretical Quantiles</h2>
+    <div class="plot-wrap">
+      <canvas id="qqCanvas" height="300"></canvas>
+    </div>
+    <div class="plot-caption">
+      Gringorten plotting positions. Points near the diagonal indicate good GEV fit.
+      GEV fitted on block minima (negated); back-transformed to original score scale.
+      n = 6229 meta-analyses.
+    </div>
+
+    <div class="stat-grid" style="margin-top:16px;grid-template-columns:repeat(3,1fr)">
+      <div class="stat">
+        <div class="stat-label">GEV tail class</div>
+        <div class="stat-value">Frechet</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Domains analysed</div>
+        <div class="stat-value">11</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">F-grade MAs</div>
+        <div class="stat-value">271 / 6229</div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const QQ_EMP = [19.0, 32.0, 34.0, 35.0, 37.0, 37.0, 38.0, 39.0, 39.0, 39.0, 39.0, 39.0, 42.0, 42.0, 42.0, 42.0, 42.0, 43.0, 43.0, 43.0, 43.0, 43.0, 43.0, 43.0, 43.0, 43.0, 43.0, 43.0, 43.0, 43.0, 43.0, 44.0, 44.0, 44.0, 44.0, 44.0, 44.0, 44.0, 44.0, 44.0, 44.0, 44.0, 44.0, 44.0, 44.0, 44.0, 44.0, 44.0, 45.0, 45.0, 45.0, 45.0, 45.0, 45.0, 45.0, 45.0, 45.0, 45.0, 45.0, 45.0, 45.0, 45.0, 46.0, 46.0, 46.0, 46.0, 46.0, 46.0, 46.0, 46.0, 46.0, 46.0, 46.0, 46.0, 46.0, 46.0, 46.0, 46.0, 46.0, 47.0, 47.0, 47.0, 47.0, 47.0, 47.0, 47.0, 47.0, 47.0, 47.0, 47.0, 47.0, 47.0, 47.0, 47.0, 47.0, 47.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 48.0, 49.0, 49.0, 49.0, 49.0, 49.0, 49.0, 49.0, 49.0, 49.0, 49.0, 49.0, 49.0, 49.0, 49.0, 49.0, 49.0, 49.0, 49.0, 49.0, 49.0, 49.0, 49.0, 49.0, 49.0, 49.0, 49.0, 49.0, 49.0, 49.0, 49.0, 49.0, 49.0, 49.0, 49.0, 49.0, 49.0, 49.0, 49.0, 49.0];
+const QQ_THE = [19.0, 19.0, 19.000000000000004, 19.00000000000001, 19.000000000000036, 19.000000000000085, 19.00000000000017, 19.000000000000316, 19.000000000000544, 19.000000000000878, 19.000000000001346, 19.000000000001993, 19.000000000002856, 19.000000000003975, 19.00000000000541, 19.000000000007212, 19.000000000009443, 19.00000000001217, 19.00000000001547, 19.000000000019416, 19.000000000024095, 19.000000000029594, 19.000000000036014, 19.000000000043453, 19.000000000052022, 19.00000000006184, 19.000000000073022, 19.000000000085702, 19.00000000010001, 19.00000000011609, 19.00000000013409, 19.000000000154166, 19.00000000017648, 19.0000000002012, 19.000000000228507, 19.000000000258577, 19.00000000029161, 19.0000000003278, 19.00000000036735, 19.00000000041048, 19.00000000045741, 19.000000000508365, 19.00000000056358, 19.00000000062331, 19.0000000006878, 19.000000000757307, 19.000000000832106, 19.000000000912472, 19.00000000099869, 19.000000001091053, 19.00000000118986, 19.000000001295422, 19.00000000140806, 19.0000000015281, 19.000000001655874, 19.000000001791726, 19.000000001936016, 19.000000002089095, 19.000000002251344, 19.000000002423135, 19.00000000260486, 19.000000002796913, 19.000000002999705, 19.000000003213646, 19.000000003439165, 19.000000003676696, 19.00000000392668, 19.000000004189573, 19.000000004465836, 19.000000004755936, 19.00000000506036, 19.0000000053796, 19.000000005714156, 19.000000006064532, 19.000000006431257, 19.000000006814854, 19.000000007215867, 19.000000007634846, 19.000000008072348, 19.00000000852895, 19.000000009005223, 19.00000000950176, 19.00000001001917, 19.000000010558054, 19.000000011119038, 19.000000011702753, 19.00000001230984, 19.00000001294095, 19.000000013596754, 19.00000001427792, 19.000000014985133, 19.000000015719092, 19.000000016480495, 19.000000017270068, 19.00000001808854, 19.00000001893664, 19.000000019815122, 19.00000002072475, 19.0000000216663, 19.000000022640542, 19.000000023648283, 19.000000024690323, 19.00000002576748, 19.000000026880585, 19.00000002803047, 19.000000029217997, 19.000000030444024, 19.000000031709423, 19.000000033015084, 19.0000000343619, 19.000000035750787, 19.000000037182662, 19.00000003865846, 19.000000040179124, 19.000000041745615, 19.0000000433589, 19.000000045019952, 19.000000046729777, 19.000000048489373, 19.00000005029976, 19.000000052161965, 19.000000054077034, 19.000000056046016, 19.000000058069983, 19.000000060150008, 19.00000006228719, 19.000000064482627, 19.00000006673744, 19.000000069052756, 19.000000071429717, 19.00000007386948, 19.000000076373208, 19.000000078942087, 19.000000081577305, 19.00000008428007, 19.000000087051607, 19.000000089893142, 19.000000092805923, 19.000000095791204, 19.00000009885026, 19.00000010198438, 19.000000105194857, 19.000000108483, 19.00000011185014, 19.000000115297617, 19.000000118826772, 19.000000122438983, 19.00000012613562, 19.000000129918078, 19.000000133787765, 19.0000001377461, 19.000000141794516, 19.000000145934457, 19.00000015016739, 19.000000154494792, 19.000000158918148, 19.000000163438962, 19.000000168058747, 19.000000172779043, 19.000000177601393, 19.00000018252735, 19.0000001875585, 19.00000019269642, 19.000000197942715, 19.00000020329901, 19.000000208766927, 19.000000214348116, 19.00000022004424, 19.000000225856972, 19.000000231788, 19.000000237839032, 19.000000244011783, 19.00000025030799, 19.000000256729404, 19.000000263277784, 19.000000269954914, 19.00000027676258, 19.000000283702597, 19.00000029077679, 19.000000297986993, 19.00000030533506, 19.000000312822866, 19.00000032045229, 19.000000328225234, 19.000000336143614, 19.000000344209358, 19.00000035242442, 19.00000036079075, 19.00000036931033, 19.000000377985156, 19.000000386817234, 19.00000039580859, 19.000000404961263, 19.000000414277306, 19.00000042375879, 19.000000433407813, 19.000000443226465, 19.000000453216874, 19.00000046338117, 19.000000473721506];
+const TAIL_DATA = [{"domain": "Other", "xi": 0.06097799904857941, "scale": 4.580705487112099, "n": 58, "ci_lo": -0.3029848637784422, "ci_hi": 0.42494086187560104, "success": true}, {"domain": "Hypertension", "xi": 0.03431104593082873, "scale": 3.0578699432872014, "n": 12, "ci_lo": -0.7658556033783428, "ci_hi": 0.8344776952400002, "success": true}, {"domain": "Diabetes", "xi": -0.039827234305494806, "scale": 3.1905621051941355, "n": 58, "ci_lo": -0.4037900971325164, "ci_hi": 0.32413562852152683, "success": true}, {"domain": "Respiratory", "xi": -0.09663564204144404, "scale": 2.0904338148526374, "n": 11, "ci_lo": -0.932382450155437, "ci_hi": 0.7391111660725489, "success": true}, {"domain": "Mental_health", "xi": -0.23890979731452933, "scale": 3.793184191070443, "n": 32, "ci_lo": -0.7289097973145293, "ci_hi": 0.25109020268547066, "success": true}, {"domain": "Pregnancy", "xi": -0.31949389393494987, "scale": 3.613494771266751, "n": 24, "ci_lo": -0.8852971577407831, "ci_hi": 0.24630936987088337, "success": true}, {"domain": "Cardiovascular", "xi": -0.3978976038552763, "scale": 2.8905401042496472, "n": 36, "ci_lo": -0.8598740342304874, "ci_hi": 0.06407882651993474, "success": true}, {"domain": "Pain", "xi": -0.4535188571259958, "scale": 3.6534362724126934, "n": 22, "ci_lo": -1.0444810924984125, "ci_hi": 0.13744337824642083, "success": true}, {"domain": "Infection", "xi": -0.49210356505383274, "scale": 2.3806649630333405, "n": 7, "ci_lo": -1.5397676333505363, "ci_hi": 0.5555605032428708, "success": true}, {"domain": "Cancer", "xi": -1.0994121282454667, "scale": 3.2982363847364007, "n": 6, "ci_lo": -2.231018655857133, "ci_hi": 0.03219439936619972, "success": true}, {"domain": "Gastrointestinal", "xi": -1.8709097761941393, "scale": 5.612729328582419, "n": 5, "ci_lo": -3.110522618980144, "ci_hi": -0.6312969334081346, "success": true}];
+const RL_POINTS = [{"m": 50, "rl": 48.0}, {"m": 100, "rl": 46.0}, {"m": 500, "rl": 42.0}];
+const SCORES_MEAN = 65.49;
+const N_TOTAL = 6229;
+
+// ── UTILITIES ─────────────────────────────────────────────────────────────────
+function lerp(a, b, t) { return a + (b - a) * t; }
+function mapRange(v, lo, hi, outLo, outHi) {
+  return outLo + (v - lo) / (hi - lo) * (outHi - outLo);
+}
+
+// ── S2: RETURN LEVEL CANVAS ───────────────────────────────────────────────────
+(function drawRL() {
+  const canvas = document.getElementById('rlCanvas');
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.parentElement.clientWidth - 32;
+  const H = 260;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const pad = {l:52, r:24, t:20, b:48};
+  const pw = W - pad.l - pad.r;
+  const ph = H - pad.t - pad.b;
+
+  // compute empirical quantiles at various return periods
+  const ms = [10, 20, 50, 100, 200, 500];
+  const pcts = ms.map(m => 100 / m);
+
+  // Use RL_POINTS for the 3 anchor points; interpolate for others
+  // For simplicity, compute by mapping proportion: use RL_POINTS as anchors
+  const rlMap = {};
+  RL_POINTS.forEach(p => rlMap[p.m] = p.rl);
+
+  // Scores data not available in browser; use interpolation from anchors
+  // Anchor: m=50->rl50, m=100->rl100, m=500->rl500; extrapolate log(m) linear
+  const mVals = RL_POINTS.map(p => Math.log10(p.m));
+  const rlVals = RL_POINTS.map(p => p.rl);
+  function interpRL(m) {
+    const lm = Math.log10(m);
+    if (lm <= mVals[0]) return lerp(rlVals[0], rlVals[1], (lm - mVals[0]) / (mVals[1] - mVals[0]));
+    if (lm >= mVals[mVals.length-1]) return rlVals[rlVals.length-1];
+    for (let i = 0; i < mVals.length-1; i++) {
+      if (lm >= mVals[i] && lm <= mVals[i+1]) {
+        const t = (lm - mVals[i]) / (mVals[i+1] - mVals[i]);
+        return lerp(rlVals[i], rlVals[i+1], t);
+      }
+    }
+    return rlVals[rlVals.length-1];
+  }
+
+  const pts = ms.map(m => ({ m, rl: interpRL(m) }));
+  const minRL = Math.min(...pts.map(p => p.rl)) - 2;
+  const maxRL = Math.max(...pts.map(p => p.rl)) + 2;
+  const logMs = pts.map(p => Math.log10(p.m));
+  const minLM = Math.min(...logMs) - 0.05;
+  const maxLM = Math.max(...logMs) + 0.05;
+
+  function px(m) { return pad.l + mapRange(Math.log10(m), minLM, maxLM, 0, pw); }
+  function py(rl) { return pad.t + mapRange(rl, maxRL, minRL, 0, ph); }
+
+  // Grid
+  ctx.strokeStyle = '#e8e3db'; ctx.lineWidth = 1;
+  [20,30,40,50,60].forEach(v => {
+    const y = py(v);
+    if (y >= pad.t && y <= pad.t + ph) {
+      ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l + pw, y); ctx.stroke();
+    }
+  });
+
+  // Line
+  ctx.beginPath();
+  pts.forEach((p, i) => {
+    const x = px(p.m), y = py(p.rl);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = '#326891'; ctx.lineWidth = 2.5; ctx.stroke();
+
+  // Fill under
+  ctx.beginPath();
+  pts.forEach((p, i) => {
+    const x = px(p.m), y = py(p.rl);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.lineTo(px(pts[pts.length-1].m), pad.t + ph);
+  ctx.lineTo(px(pts[0].m), pad.t + ph);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(50,104,145,0.08)'; ctx.fill();
+
+  // Points
+  pts.forEach(p => {
+    ctx.beginPath();
+    ctx.arc(px(p.m), py(p.rl), 5, 0, Math.PI * 2);
+    ctx.fillStyle = '#326891'; ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+  });
+
+  // Axes labels
+  ctx.fillStyle = '#5f5a53'; ctx.font = '10px "Segoe UI",Arial,sans-serif';
+  ctx.textAlign = 'right';
+  [20,30,40,50,60].forEach(v => {
+    const y = py(v);
+    if (y >= pad.t && y <= pad.t + ph) ctx.fillText(v, pad.l - 6, y + 3);
+  });
+  ctx.textAlign = 'center';
+  ms.forEach(m => ctx.fillText(m, px(m), pad.t + ph + 16));
+
+  ctx.fillStyle = '#5f5a53'; ctx.font = 'bold 10px "Segoe UI",Arial,sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Return period m (number of domains)', pad.l + pw/2, H - 4);
+  ctx.save(); ctx.translate(12, pad.t + ph/2); ctx.rotate(-Math.PI/2);
+  ctx.fillText('Trust score (1/m percentile)', 0, 0); ctx.restore();
+})();
+
+// ── S3: FOREST PLOT (DOMAIN TAIL INDEX) ───────────────────────────────────────
+(function drawForest() {
+  const wrap = document.getElementById('forestBars');
+  wrap.innerHTML = '';
+  if (!TAIL_DATA.length) { wrap.textContent = 'No domain data'; return; }
+  const xiVals = TAIL_DATA.map(d => d.xi).filter(x => isFinite(x));
+  const maxXi = Math.max(0.2, ...xiVals.map(Math.abs));
+  const midPct = (maxXi / (2 * maxXi)) * 100;  // 50% is xi=0
+
+  TAIL_DATA.forEach(row => {
+    const xi = row.xi;
+    if (!isFinite(xi)) return;
+    const div = document.createElement('div');
+    div.className = 'forest-row';
+
+    const label = document.createElement('div');
+    label.className = 'forest-label';
+    label.textContent = row.domain;
+    label.title = row.domain;
+
+    const track = document.createElement('div');
+    track.className = 'forest-track';
+
+    const barW = Math.abs(xi) / maxXi * 48;  // max 48% width on each side
+    const bar = document.createElement('div');
+    bar.className = 'forest-bar' + (xi > 0.05 ? ' heavy' : '');
+
+    // CI markers
+    if (isFinite(row.ci_lo) && isFinite(row.ci_hi)) {
+      const loW = (Math.max(0, -row.ci_lo) / maxXi * 48);
+      const hiW = (Math.max(0, row.ci_hi) / maxXi * 48);
+      const ciBar = document.createElement('div');
+      ciBar.style.cssText = `position:absolute;height:3px;top:50%;transform:translateY(-50%);
+        left:${50 + (Math.min(row.ci_lo, 0) / maxXi * 48)}%;
+        width:${(row.ci_hi - row.ci_lo) / maxXi * 48}%;
+        background:rgba(0,0,0,0.15);border-radius:1px`;
+      track.appendChild(ciBar);
+    }
+
+    // Zero line
+    const zeroLine = document.createElement('div');
+    zeroLine.style.cssText = `position:absolute;width:2px;height:100%;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.2)`;
+    track.appendChild(zeroLine);
+
+    // Bar (from center)
+    const left = xi >= 0 ? 50 : (50 + xi / maxXi * 48);
+    bar.style.cssText = `width:${barW}%;left:${xi >= 0 ? 50 : left}%;background:${xi > 0.05 ? '#922b21' : xi > 0 ? '#a06a12' : '#326891'}`;
+    track.appendChild(bar);
+
+    const xiLabel = document.createElement('div');
+    xiLabel.className = 'forest-xi';
+    xiLabel.textContent = xi.toFixed(3);
+
+    div.appendChild(label);
+    div.appendChild(track);
+    div.appendChild(xiLabel);
+    wrap.appendChild(div);
+  });
+})();
+
+// ── S4: QQ PLOT ───────────────────────────────────────────────────────────────
+(function drawQQ() {
+  const canvas = document.getElementById('qqCanvas');
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.parentElement.clientWidth - 32;
+  const H = 300;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const pad = {l:52, r:24, t:20, b:48};
+  const pw = W - pad.l - pad.r;
+  const ph = H - pad.t - pad.b;
+
+  // Filter valid pairs
+  const pairs = QQ_EMP.map((e, i) => [e, QQ_THE[i]])
+    .filter(([e, t]) => isFinite(e) && isFinite(t));
+
+  if (!pairs.length) { ctx.fillStyle='#999';ctx.fillText('No data',W/2,H/2); return; }
+
+  const allE = pairs.map(p => p[0]);
+  const allT = pairs.map(p => p[1]);
+  const minV = Math.min(...allE, ...allT) - 2;
+  const maxV = Math.max(...allE, ...allT) + 2;
+
+  function px(v) { return pad.l + (v - minV) / (maxV - minV) * pw; }
+  function py(v) { return pad.t + (maxV - v) / (maxV - minV) * ph; }
+
+  // Grid
+  ctx.strokeStyle = '#e8e3db'; ctx.lineWidth = 1;
+  [30,40,50,60,70,80,90].forEach(v => {
+    if (v >= minV && v <= maxV) {
+      ctx.beginPath(); ctx.moveTo(pad.l, py(v)); ctx.lineTo(pad.l+pw, py(v)); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(px(v), pad.t); ctx.lineTo(px(v), pad.t+ph); ctx.stroke();
+    }
+  });
+
+  // Diagonal reference line
+  ctx.beginPath(); ctx.moveTo(px(minV+2), py(minV+2)); ctx.lineTo(px(maxV-2), py(maxV-2));
+  ctx.strokeStyle = '#c0bab2'; ctx.lineWidth = 1.5; ctx.setLineDash([6,4]); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Points
+  ctx.fillStyle = 'rgba(50,104,145,0.55)';
+  pairs.forEach(([e, t]) => {
+    ctx.beginPath();
+    ctx.arc(px(t), py(e), 3, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  // Axes
+  ctx.fillStyle = '#5f5a53'; ctx.font = '10px "Segoe UI",Arial,sans-serif';
+  ctx.textAlign = 'right';
+  [30,40,50,60,70,80,90].forEach(v => {
+    if (v >= minV && v <= maxV) ctx.fillText(v, pad.l-5, py(v)+3);
+  });
+  ctx.textAlign = 'center';
+  [30,40,50,60,70,80,90].forEach(v => {
+    if (v >= minV && v <= maxV) ctx.fillText(v, px(v), pad.t+ph+16);
+  });
+
+  ctx.fillStyle = '#5f5a53'; ctx.font = 'bold 10px "Segoe UI",Arial,sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Theoretical GEV quantile (score)', pad.l + pw/2, H-4);
+  ctx.save(); ctx.translate(12, pad.t+ph/2); ctx.rotate(-Math.PI/2);
+  ctx.fillText('Empirical quantile (score)', 0, 0); ctx.restore();
+})();
+</script>
+</body>
+</html>

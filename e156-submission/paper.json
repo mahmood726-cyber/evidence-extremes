@@ -1,21 +1,61 @@
 {
-  "title": "EvidenceExtremes: Extreme Value Analysis for Meta-Analytic Outlier Detection",
+  "title": "Untitled E156",
   "slug": "evidenceextremes",
-  "date": "2026-04-07",
+  "author": "Mahmood Ahmad",
+  "date": "2026-03-26",
+  "body": "",
+  "word_count": 0,
+  "sentence_count": 0,
+  "sentences": [],
+  "notes": {
+    "code": "https://github.com/mahmood726-cyber/evidenceextremes"
+  },
   "type": "methods",
-  "primary_estimand": "Generalised extreme value distribution parameters for outlier classification",
-  "certainty": "",
-  "summary": "Meta-analysis effect size distributions for extreme value modelling",
-  "body": "Can extreme value theory provide a principled statistical framework for identifying outlier studies in meta-analysis beyond standard leave-one-out diagnostics? We built a 401-line dashboard fitting generalised extreme value distributions to study-level effect sizes and using the fitted tail behaviour to classify studies as typical, unusual, or extreme outliers. The tool estimates shape, location, and scale parameters of the GEV distribution via maximum likelihood, then computes exceedance probabilities for each study against the fitted tail model. GEV-based outlier detection identified all planted outliers in simulation studies with 94 percent sensitivity (95% CI 90 to 97) while maintaining a 3 percent false positive rate, compared with 78 percent sensitivity for standardised residual thresholds. The shape parameter provided a natural measure of tail heaviness that distinguished between heavy-tailed and light-tailed heterogeneity patterns across clinical domains. Extreme value methods could provide a more theoretically grounded approach to outlier detection than arbitrary residual cutoffs commonly used. The GEV fit requires at least 15 studies for stable parameter estimation and is unreliable for very small meta-analyses.",
-  "sentences": [
-    "Can extreme value theory provide a principled statistical framework for identifying outlier studies in meta-analysis beyond standard leave-one-out diagnostics?",
-    "We built a 401-line dashboard fitting generalised extreme value distributions to study-level effect sizes and using the fitted tail behaviour to classify studies as typical, unusual, or extreme outliers.",
-    "The tool estimates shape, location, and scale parameters of the GEV distribution via maximum likelihood, then computes exceedance probabilities for each study against the fitted tail model.",
-    "GEV-based outlier detection identified all planted outliers in simulation studies with 94 percent sensitivity (95% CI 90 to 97) while maintaining a 3 percent false positive rate, compared with 78 percent sensitivity for standardised residual thresholds.",
-    "The shape parameter provided a natural measure of tail heaviness that distinguished between heavy-tailed and light-tailed heterogeneity patterns across clinical domains.",
-    "Extreme value methods could provide a more theoretically grounded approach to outlier detection than arbitrary residual cutoffs commonly used.",
-    "The GEV fit requires at least 15 studies for stable parameter estimation and is unreliable for very small meta-analyses."
-  ],
-  "study_count": "",
-  "participant_count": ""
+  "primary_estimand": "",
+  "validation": {
+    "status": "fail",
+    "checks": [
+      {
+        "name": "single paragraph",
+        "ok": true,
+        "detail": "Body must not contain blank-line paragraph breaks."
+      },
+      {
+        "name": "sentence count",
+        "ok": false,
+        "detail": "Found 0 sentences."
+      },
+      {
+        "name": "word count",
+        "ok": true,
+        "detail": "Found 0 words."
+      },
+      {
+        "name": "no headings",
+        "ok": true,
+        "detail": "No markdown headings allowed in body."
+      },
+      {
+        "name": "no links",
+        "ok": true,
+        "detail": "No links or DOI links allowed in body."
+      },
+      {
+        "name": "result sentence has interval",
+        "ok": false,
+        "detail": "Sentence 4 should include a quantitative result such as a percentage, count, or interval."
+      },
+      {
+        "name": "result sentence has estimand",
+        "ok": false,
+        "detail": "Sentence 4 should name an effect measure or test metric."
+      },
+      {
+        "name": "boundary sentence present",
+        "ok": false,
+        "detail": "Sentence 7 should express a limitation, harm, or scope boundary."
+      }
+    ]
+  },
+  "schema": "e156-v0.2"
 }
