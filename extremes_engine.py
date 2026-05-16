@@ -9,6 +9,7 @@ then computes return levels and compares tail indices across domains.
 import io
 import sys
 import warnings
+from pathlib import Path
 import numpy as np
 import pandas as pd
 from scipy.stats import genextreme, genpareto
@@ -22,8 +23,22 @@ if __name__ == "__main__" and hasattr(sys.stdout, "buffer"):
 
 # ── DATA LOADING ────────────────────────────────────────────────────────────
 
-DATA_SCORES = "C:/Models/EvidenceScore/results/scores.csv"
-DATA_GROUPS = "C:/Models/TrustGate/data/review_groups.csv"
+def _model_file(model_name: str, *parts: str) -> str:
+    """Resolve sibling model artifacts under either WSL or Windows paths."""
+    models_roots = (
+        Path(__file__).resolve().parents[1],
+        Path("/mnt/c/Models"),
+        Path("C:/Models"),
+    )
+    for root in models_roots:
+        candidate = root / model_name / Path(*parts)
+        if candidate.exists():
+            return str(candidate)
+    return str(Path("C:/Models") / model_name / Path(*parts))
+
+
+DATA_SCORES = _model_file("EvidenceScore", "results", "scores.csv")
+DATA_GROUPS = _model_file("TrustGate", "data", "review_groups.csv")
 
 THRESHOLD = 50.0  # F-grade boundary
 
